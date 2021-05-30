@@ -3,8 +3,10 @@ from __future__ import print_function
 import datetime
 
 from airflow import models
+from airflow.decorators.base import get_unique_task_id
 from airflow.operators import bash_operator
 from airflow.operators import python_operator
+from airflow.contrib.operators.dataflow_operator import DataflowTemplateOperator
 
 default_dag_args = {
     # The start_date describes when a DAG is valid / can be run. Set this to a
@@ -31,6 +33,11 @@ with models.DAG(
         task_id='hello',
         python_callable=greeting)
 
+    yo_dagrun = bash_operator.BashOperator(
+        task_id='yo',
+        bash_command='echo dagrun: {{ dag_run.conf }}'
+    )
+
     # Likewise, the goodbye_bash task calls a Bash script.
     goodbye_bash = bash_operator.BashOperator(
         task_id='bye',
@@ -38,4 +45,4 @@ with models.DAG(
 
     # Define the order in which the tasks complete by using the >> and <<
     # operators. In this example, hello_python executes before goodbye_bash.
-    hello_python >> goodbye_bash
+    hello_python >> yo_dagrun >> goodbye_bash

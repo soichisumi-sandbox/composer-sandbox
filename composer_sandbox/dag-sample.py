@@ -19,7 +19,7 @@ default_dag_args = {
 # DAG object.
 with models.DAG(
         'dag_sample',
-        schedule_interval=datetime.timedelta(days=1),
+        schedule_interval=None,  # datetime.timedelta(days=1),
         default_args=default_dag_args) as dag:
     def greeting():
         import logging

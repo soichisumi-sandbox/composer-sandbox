@@ -6,7 +6,7 @@ authors = ["Soichi Sumi <soichi.sumi@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-apache-airflow = "^2.1.0"
+apache-airflow = {version = "^1.10.10", extras = ["gcp"]}
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

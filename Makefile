@@ -5,6 +5,11 @@ include .env
 DESTINATION=soichisumi-sandbox/
 #DESTINATION=test
 
+install-airflow:
+	pip install apache-airflow==1.10.15 \
+ --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-1.10.15/constraints-3.7.txt"
+
+
 deploy:
 	gcloud composer environments storage dags import \
 	--project $(PROJECT_ID) \

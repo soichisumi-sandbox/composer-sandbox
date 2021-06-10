@@ -58,7 +58,7 @@ with models.DAG(
     # Likewise, the goodbye_bash task calls a Bash script.
     goodbye_bash = bash_operator.BashOperator(
         task_id='bye',
-        bash_command='echo Goodbye.')
+        bash_command='echo {{ ti.xcom_pull(key="xcomkey") }}')
 
     # Define the order in which the tasks complete by using the >> and <<
     # operators. In this example, hello_python executes before goodbye_bash.

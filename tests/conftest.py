@@ -29,66 +29,64 @@ def init_db():
 
 
 # XCOM
-from unittest.mock import patch
 
 import pytest
-from airflow.models.taskinstance import TaskInstance
 
 XCOM_RETURN_KEY = 'return_value'
-xcom_dict = dict()
-
-
-@pytest.fixture(scope="session", autouse=True)
-def init_test_xcom():
-    global xcom_dict
-    xcom_dict = {
-        generate_xcom_key(key="xcomkey"): "xcomvalue"
-    }
+@pytest.fixture
+def get_xcom_dict():
+    xcom_dict = dict()
+    xcom_dict[generate_xcom_key(key="xcomkey")] = "xcomvalue"
+    return xcom_dict
 
 
 def generate_xcom_key(task_ids=None, key=XCOM_RETURN_KEY):
     return f'{task_ids}-{key}'
 
 
-# @pytest.fixture
-# def mock_xcom_pull():
-#     def func(
-#             self,
-#             task_ids=None,
-#             dag_id=None,
-#             key=XCOM_RETURN_KEY,
-#             include_prior_dates=False):
-#         return xcom_dict[generate_xcom_key(task_ids=task_ids, key=key)]
-#
-#     with patch(TaskInstance, 'xcom_pull', func) as mock_pull:
-#         yield mock_pull
-#
-#
-# @pytest.fixture
-# def mock_xcom_push():
-#     def func(
-#             self,
-#             key,
-#             value,
-#             execution_date=None):
-#         xcom_dict[generate_xcom_key(task_ids=task_ids, key=key)] = value
-#
-#     with patch(TaskInstance, 'xcom_push', func) as mock_push:
-#         yield mock_push
+@pytest.fixture
+def mock_xcom_pull(get_xcom_dict):
+    xcom_dict = get_xcom_dict
+
+    def func(
+            self,
+            task_ids=None,
+            dag_id=None,
+            key=XCOM_RETURN_KEY,
+            include_prior_dates=False):
+        nonlocal xcom_dict
+        return xcom_dict[generate_xcom_key(task_ids=task_ids, key=key)]
+    return func
 
 
-def mock_xcom_pull(
-        self,
-        task_ids=None,
-        dag_id=None,
-        key=XCOM_RETURN_KEY,
-        include_prior_dates=False):
-    return xcom_dict[generate_xcom_key(task_ids=task_ids, key=key)]
+@pytest.fixture
+def mock_xcom_push(get_xcom_dict):
+    xcom_dict = get_xcom_dict
 
+    def func(
+            self,
+            key,
+            value,
+            execution_date=None):
+        nonlocal xcom_dict
+        xcom_dict[generate_xcom_key(task_ids=self.task_id, key=key)] = value
 
-def mock_xcom_push(
-        self,
-        key,
-        value,
-        execution_date=None):
-    xcom_dict[generate_xcom_key(task_ids=task_ids, key=key)] = value
+    return func
+
+# def mock_xcom_pull(
+#         self,
+#         task_ids=None,
+#         dag_id=None,
+#         key=XCOM_RETURN_KEY,
+#         include_prior_dates=False):
+#     nonlocal xcom_dict
+#     return xcom_dict[generate_xcom_key(task_ids=task_ids, key=key)]
+#
+#
+# def mock_xcom_push(
+#         self,
+#         key,
+#         value,
+#         execution_date=None):
+#     nonlocal xcom_dict
+#     xcom_dict[generate_xcom_key(task_ids=self.task_id, key=key)] = value

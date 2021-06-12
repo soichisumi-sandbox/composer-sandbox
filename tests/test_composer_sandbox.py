@@ -10,6 +10,7 @@ from airflow.models import DagRun, TaskInstance
 from airflow.executors.debug_executor import DebugExecutor
 from airflow.utils import state
 from airflow.utils.timezone import datetime
+from pytest_mock import MockerFixture
 from sqlalchemy.orm.session import Session as SASession
 from typing import List
 
@@ -21,7 +22,6 @@ DEFAULT_DATE = datetime(2020, 1, 1)
 
 # ref: https://github.com/godatadriven/airflow-testing-examples/blob/master/tests/dags/test_dag_integrity.py
 # ref2: https://airflow.apache.org/docs/apache-airflow/1.10.15/best-practices.html#testing-a-dag
-@pytest.mark.skip()
 def test_dags():
     dagbag = models.DagBag(dag_folder=DAG_DIR, include_examples=False)  # type: models.DagBag
 
@@ -34,7 +34,6 @@ def test_dags():
         print(f'k: {k}, v: {v}')
 
 
-@pytest.mark.skip()
 def test_dag_sample_w_template_actual_run():
     dagbag = models.DagBag(dag_folder=DAG_DIR, include_examples=False)
     dag = dagbag.get_dag(dag_id="dag_sample_w_template")  # type: models.DAG
@@ -72,9 +71,12 @@ def test_dag_sample_w_template_actual_run():
 # job.run()
 
 # @pytest.mark.skip()
-@patch.object(TaskInstance, 'xcom_pull', conftest.mock_xcom_pull)
-@patch.object(TaskInstance, 'xcom_push', conftest.mock_xcom_push)
-def test_dag_sample_w_template_mock():
+def test_dag_sample_w_template_mock(mocker: MockerFixture, mock_xcom_pull, mock_xcom_push):
+    # Besides undoing the mocking automatically after the end of the test
+    # https://github.com/pytest-dev/pytest-mock#pytest-mock
+    mocker.patch.object(TaskInstance, 'xcom_pull', mock_xcom_pull)
+    mocker.patch.object(TaskInstance, 'xcom_push', mock_xcom_push)
+
     dagbag = models.DagBag(dag_folder=DAG_DIR, include_examples=False)
     dag = dagbag.get_dag(dag_id="dag_sample_w_template")  # type: models.DAG
 
